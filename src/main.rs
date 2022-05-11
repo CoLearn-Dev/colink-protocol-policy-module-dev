@@ -12,10 +12,7 @@ struct PolicyModule {
 
 impl PolicyModule {
     async fn _rule_monitor(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let queue_name = self
-            .cl
-            .subscribe("_colink_policy_module:settings", None)
-            .await?;
+        let queue_name = self.cl.subscribe("_policy_module:settings", None).await?;
         let mut subscriber = self.cl.new_subscriber(&queue_name).await?;
         loop {
             let data = subscriber.get_next().await?;
@@ -55,7 +52,7 @@ impl PolicyModule {
                 let res = self
                     .cl
                     .read_entries(&[StorageEntry {
-                        key_name: format!("_colink_internal:tasks:{}", task_id.task_id),
+                        key_name: format!("_internal:tasks:{}", task_id.task_id),
                         ..Default::default()
                     }])
                     .await?;
@@ -164,7 +161,7 @@ impl ProtocolEntry for PolicyModuleLauncher {
         });
         let res = cl
             .read_entries(&[StorageEntry {
-                key_name: "_colink_policy_module:settings".to_string(),
+                key_name: "_policy_module:settings".to_string(),
                 ..Default::default()
             }])
             .await?;
@@ -177,7 +174,7 @@ impl ProtocolEntry for PolicyModuleLauncher {
                 let pm = pm.clone();
                 tokio::spawn(async move { pm.rule_monitor().await })
             };
-            let task_queue_name = cl.subscribe("_colink_internal:TODO", None).await?;
+            let task_queue_name = cl.subscribe("_internal:TODO", None).await?;
             let operator = {
                 let queue_name = task_queue_name.clone();
                 let pm = pm.clone();
