@@ -5,11 +5,11 @@ In DDS, when a user wants to start a task with other users, they need to send th
 The policy module runs as a protocol operator(protocol=policy_module), and the user can use a local task to start it.
 
 Here are some common scenarios:
-1. A user wants to automatically accept all tasks with greetings protocol.
-2. A user wants to automatically accept all tasks if all participants of these tasks are in a trust list.
-3. In federated learning scenarios, a user may be invited as different roles in different tasks. And a user wants to automatically accept all federated learning tasks if their roles in these tasks are aggregator or client.
+1. A user wants to automatically approve all tasks with greetings protocol.
+2. A user wants to automatically approve all tasks if all participants of these tasks are in a trust list.
+3. In federated learning scenarios, a user may be invited as different roles in different tasks. And a user wants to automatically approve all federated learning tasks if their roles in these tasks are aggregator or client.
 4. A user wants to reject all tasks without the require_agreement property.
-5. A task wants to accept all its subtasks with greetings protocol.
+5. A task wants to approve all its subtasks with greetings protocol.
 6. ...
 
 ## Rule
@@ -17,7 +17,7 @@ The policy module will follow the rules to make decisions automatically. A user'
 
 #### Each rule must consist of three properties:
 - `task_filter` - a filter that determines when a rule takes effect.
-- `action` - a string (`accept`/`reject`/`ignore`) that describes the action that will be taken.
+- `action` - a string (`approve`/`reject`/`ignore`) that describes the action that will be taken.
 - `priority` - a positive integer, and the smaller integer represents higher priority.
 
 #### Each task_filter can consist of the following properties:
@@ -27,7 +27,7 @@ The policy module will follow the rules to make decisions automatically. A user'
 - `role` - a regex, a task will be matched if the user's role in the task matches the regex.
 - `parent_task_filter` - a task_filter, but it can not include a `parent_task_filter` property.
 - `require_agreement` - a bool.
-If one property is not included in task_filter, then the filter will ignore it and use other properties to match. And a valid task_filter must include at least one property.
+If one property is not included in task_filter, then the filter will ignore it and use other properties to match. If a task_filter does not contain any property, it can match any task.
 
 #### About priority:
 ##### What will happen if a task matches more than one rule?
@@ -49,7 +49,7 @@ The rules are in JSON formats. There are some examples.
     "task_filter": {
         "protocol_name": "greetings"
     },
-    "action": "accept",
+    "action": "approve",
     "priority": 1
 }
 ```
@@ -63,7 +63,7 @@ The rules are in JSON formats. There are some examples.
             "user_id_2"
         ]
     },
-    "action": "accept",
+    "action": "approve",
     "priority": 1
 }
 ```
@@ -74,7 +74,7 @@ The rules are in JSON formats. There are some examples.
         "protocol_name": "fl",
         "role": "aggregator|client"
     },
-    "action": "accept",
+    "action": "approve",
     "priority": 1
 }
 ```
@@ -97,7 +97,7 @@ The rules are in JSON formats. There are some examples.
             "task_id": "2beef808-e7ff-425c-bb89-4761826c0771"
         }
     },
-    "action": "accept",
+    "action": "approve",
     "priority": 100
 }
 ```

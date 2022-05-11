@@ -1,6 +1,8 @@
 syntax = "proto3";
 package colink_policy_module;
 
+import "google/protobuf/wrappers.proto";
+
 message Rule {
     TaskFilter task_filter = 1;
     string action = 2;
@@ -13,7 +15,7 @@ message TaskFilter {
     repeated string participants = 3;
     string role = 4;
     TaskFilter parent_task_filter = 5;
-    bool require_agreement = 6;
+    google.protobuf.BoolValue require_agreement = 6;
 }
 
 message Settings {

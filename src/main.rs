@@ -3,7 +3,7 @@ use colink_sdk_a::*;
 use colink_sdk_p::ProtocolEntry;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use tracing::debug;
+use tracing::{debug, warn};
 
 struct PolicyModule {
     cl: CoLink,
@@ -24,6 +24,7 @@ impl PolicyModule {
             if message.change_type != "delete" {
                 let mut settings: Settings = prost::Message::decode(&*message.payload)?;
                 if settings.enable {
+                    settings.rules.sort_by(|a, b| a.priority.cmp(&b.priority));
                     let mut rules = self.rules.lock().await;
                     rules.clear();
                     rules.append(&mut settings.rules);
@@ -61,10 +62,83 @@ impl PolicyModule {
                 let task_entry = &res[0];
                 let task: Task = prost::Message::decode(&*task_entry.payload).unwrap();
                 if task.status == "waiting" {
-                    // TODO match rules
+                    let rules = self.rules.lock().await.clone();
+                    let mut matched_priority = i64::MAX;
+                    let mut matched_action = "".to_string();
+                    for rule in rules {
+                        if rule.priority as i64 > matched_priority {
+                            break;
+                        }
+                        if rule.task_filter.is_some()
+                            && self.match_filter(&task, &rule.task_filter.unwrap())
+                        {
+                            if matched_priority == i64::MAX {
+                                matched_priority = rule.priority as i64;
+                                matched_action = rule.action;
+                            } else if matched_action != rule.action {
+                                matched_priority = -1;
+                                break;
+                            }
+                        }
+                    }
+                    if matched_priority == -1 {
+                        warn!("rules conflict when matching task {}", task.task_id);
+                    } else if matched_priority != i64::MAX {
+                        if matched_action == "approve" {
+                            self.cl.confirm_task(&task.task_id, true, false, "").await?;
+                        } else if matched_action == "reject" {
+                            self.cl.confirm_task(&task.task_id, false, true, "").await?;
+                        } else if matched_action == "ignore" {
+                            self.cl
+                                .confirm_task(&task.task_id, false, false, "")
+                                .await?;
+                        }
+                    }
                 }
             }
         }
+    }
+
+    fn match_filter(&self, task: &Task, filter: &TaskFilter) -> bool {
+        if filter.task_id != String::default() && filter.task_id != task.task_id {
+            return false;
+        }
+        if filter.protocol_name != String::default() && filter.protocol_name != task.protocol_name {
+            return false;
+        }
+        if filter.require_agreement.is_some()
+            && filter.require_agreement.unwrap() != task.require_agreement
+        {
+            return false;
+        }
+        if !filter.participants.is_empty() {
+            for p in &task.participants {
+                if !filter.participants.contains(&p.user_id) {
+                    return false;
+                }
+            }
+        }
+        if filter.role != String::default() {
+            for p in &task.participants {
+                if p.user_id == "TODO my_user_id" {
+                    if p.ptype != filter.role {
+                        return false;
+                    }
+                    break;
+                }
+            }
+        }
+        if filter.parent_task_filter.is_some() {
+            let parent_task_filter = filter.parent_task_filter.as_ref().unwrap();
+            if parent_task_filter.parent_task_filter.is_none() {
+                if !self.match_filter(task, parent_task_filter) {
+                    return false;
+                }
+            } else {
+                warn!("invalid parent_task_filter");
+            }
+        }
+        true
     }
 
     async fn operator(&self, queue_name: &str) -> Result<(), String> {
