@@ -117,7 +117,7 @@ impl PolicyModule {
         }
         if filter.role != String::default() {
             for p in &task.participants {
-                if p.user_id == "TODO my_user_id" {
+                if p.user_id == self.cl.get_user_id().unwrap() {
                     if p.ptype != filter.role {
                         return false;
                     }
@@ -174,7 +174,9 @@ impl ProtocolEntry for PolicyModuleLauncher {
                 let pm = pm.clone();
                 tokio::spawn(async move { pm.rule_monitor().await })
             };
-            let task_queue_name = cl.subscribe("_internal:TODO", None).await?;
+            let task_queue_name = cl
+                .subscribe("_internal:tasks:status:waiting:latest", None)
+                .await?;
             let operator = {
                 let queue_name = task_queue_name.clone();
                 let pm = pm.clone();
