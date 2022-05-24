@@ -35,6 +35,10 @@ If there exists a high priority rule the policy module will take it. And if ther
 ##### What priority should I set?
 We recommend users set a priority lower than 100, and the protocol operator should set `priority=100` if they want to set a policy for their subtask.
 
+# Start the protocol package
+```
+cargo run -- --addr <address> --jwt <jwt>
+```
 
 ## How to config rules
 TODO

@@ -52,13 +52,9 @@ impl PolicyModule {
                 let task_id: Task = prost::Message::decode(&*message.payload).unwrap();
                 let res = self
                     .cl
-                    .read_entries(&[StorageEntry {
-                        key_name: format!("_internal:tasks:{}", task_id.task_id),
-                        ..Default::default()
-                    }])
+                    .read_entry(&format!("_internal:tasks:{}", task_id.task_id))
                     .await?;
-                let task_entry = &res[0];
-                let task: Task = prost::Message::decode(&*task_entry.payload).unwrap();
+                let task: Task = prost::Message::decode(&*res).unwrap();
                 if task.status == "waiting" {
                     let rules = self.rules.lock().await.clone();
                     let mut matched_priority = i64::MAX;
@@ -168,13 +164,8 @@ impl ProtocolEntry for PolicyModuleLauncher {
             cl: cl.clone(),
             rules: Mutex::new(Vec::new()),
         });
-        let res = cl
-            .read_entries(&[StorageEntry {
-                key_name: "_policy_module:settings".to_string(),
-                ..Default::default()
-            }])
-            .await?;
-        let mut settings: Settings = prost::Message::decode(&*res[0].payload)?;
+        let res = cl.read_entry("_policy_module:settings").await?;
+        let mut settings: Settings = prost::Message::decode(&*res)?;
         if settings.enable {
             let mut rules = pm.rules.lock().await;
             rules.append(&mut settings.rules);
