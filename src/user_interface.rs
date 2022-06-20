@@ -23,6 +23,12 @@ impl ProtocolEntry for UserStart {
         let mut payload = vec![];
         settings.encode(&mut payload).unwrap();
         cl.update_entry("_policy_module:settings", &payload).await?;
+        let participants = vec![Participant {
+            user_id: cl.get_user_id()?,
+            ptype: "local".to_string(),
+        }];
+        cl.run_task("policy_module", Default::default(), &participants, false)
+            .await?;
         Ok(())
     }
 }
