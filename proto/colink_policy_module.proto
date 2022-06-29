@@ -4,9 +4,10 @@ package colink_policy_module;
 import "google/protobuf/wrappers.proto";
 
 message Rule {
-    TaskFilter task_filter = 1;
-    string action = 2;
-    int32 priority = 3;
+    string rule_id = 1;
+    TaskFilter task_filter = 2;
+    string action = 3;
+    int32 priority = 4;
 }
 
 message TaskFilter {

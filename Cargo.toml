@@ -10,6 +10,7 @@ prost = "0.10"
 regex = "1.5"
 tokio = "1.18"
 tracing = "0.1"
+uuid = { version = "0.8", features = ["v4"] }
 
 [build-dependencies]
 prost-build = "0.10"

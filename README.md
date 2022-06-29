@@ -40,9 +40,52 @@ We recommend users set a priority lower than 100, and the protocol operator shou
 cargo run -- --addr <address> --jwt <jwt>
 ```
 
-## How to config rules
-TODO
+## How to start/stop the policy module
+Run a local task with protocol `policy_module.start`/`policy_module.stop`. (Please refer [examples/user_run_local_task.rs](https://github.com/CoLearn-Dev/colink-sdk-a-rust-dev/blob/main/examples/user_run_local_task.rs) in sdk-a for more information)  
+Example code snippet:
+```
+let cl = CoLink::new(addr, jwt);
+let participants = vec![Participant {
+    user_id: cl.get_user_id()?,
+    ptype: "local".to_string(),
+}];
+cl.run_task("policy_module.start", Default::default(), &participants, false).await?;
+```
+## How to automatically accept a protocol with a certain name
+Run a local task with protocol `policy_module.rule.add_protocol`. Put the protocol name in param.  
+Example code snippet:
+```
+let param = "greetings".as_bytes();
+let participants = vec![Participant {
+    user_id: cl.get_user_id()?,
+    ptype: "local".to_string(),
+}];
+let task_id = cl.run_task("policy_module.rule.add_protocol", param, &participants, false).await?;
+```
+## How to revert the change above
+Run a local task with protocol `policy_module.rule.remove`. Put the rule id in param.  
+Example code snippet:
+```
+let param = cl.read_entry(&format!("tasks:{}:output", task_id)).await?; // get the rule id from the previous task
+let participants = vec![Participant {
+    user_id: cl.get_user_id()?,
+    ptype: "local".to_string(),
+}];
+cl.run_task("policy_module.rule.remove", &param, &participants, false).await?;
+```
+## How to reset the rule
+Run a local task with protocol `policy_module.rule.remove`.  
+Example code snippet:
+```
+let participants = vec![Participant {
+    user_id: cl.get_user_id()?,
+    ptype: "local".to_string(),
+}];
+cl.run_task("policy_module.rule.reset", Default::default(), &participants, false).await?;
+```
 
+<br><br><br><br><br>
+<br><br><br><br><br>
 
 ## Syntax(deprecated)
 The rules are in JSON formats. There are some examples.

@@ -70,7 +70,9 @@ impl ProtocolEntry for UserAddProtocol {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),
         };
+        let rule_id = uuid::Uuid::new_v4().to_string();
         let rule = Rule {
+            rule_id: rule_id.clone(),
             task_filter: Some(TaskFilter {
                 protocol_name: String::from_utf8_lossy(&param).to_string(),
                 ..Default::default()
@@ -82,13 +84,18 @@ impl ProtocolEntry for UserAddProtocol {
         let mut payload = vec![];
         settings.encode(&mut payload).unwrap();
         cl.update_entry("_policy_module:settings", &payload).await?;
+        cl.create_entry(
+            &format!("tasks:{}:output", cl.get_task_id()?),
+            rule_id.as_bytes(),
+        )
+        .await?;
         Ok(())
     }
 }
 
-pub struct UserRemoveProtocol;
+pub struct UserRemoveRule;
 #[colink_sdk_p::async_trait]
-impl ProtocolEntry for UserRemoveProtocol {
+impl ProtocolEntry for UserRemoveRule {
     async fn start(
         &self,
         cl: CoLink,
@@ -99,16 +106,10 @@ impl ProtocolEntry for UserRemoveProtocol {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),
         };
-        let protocol_name = String::from_utf8_lossy(&param).to_string();
+        let rule_id = String::from_utf8_lossy(&param).to_string();
         let mut index = usize::MAX;
         for i in 0..settings.rules.len() {
-            if settings.rules[i]
-                .task_filter
-                .as_ref()
-                .unwrap()
-                .protocol_name
-                == protocol_name
-            {
+            if settings.rules[i].rule_id == rule_id {
                 index = i;
             }
         }
@@ -120,6 +121,27 @@ impl ProtocolEntry for UserRemoveProtocol {
         } else {
             error!("Rule not found.");
         }
+        Ok(())
+    }
+}
+
+pub struct UserReset;
+#[colink_sdk_p::async_trait]
+impl ProtocolEntry for UserReset {
+    async fn start(
+        &self,
+        cl: CoLink,
+        _param: Vec<u8>,
+        _participants: Vec<Participant>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
+            Ok(res) => prost::Message::decode(&*res)?,
+            Err(_) => Default::default(),
+        };
+        settings.rules.clear();
+        let mut payload = vec![];
+        settings.encode(&mut payload).unwrap();
+        cl.update_entry("_policy_module:settings", &payload).await?;
         Ok(())
     }
 }
