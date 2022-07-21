@@ -10,7 +10,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cl = CoLink::new(addr, jwt);
     let participants = vec![Participant {
         user_id: cl.get_user_id()?,
-        ptype: "local".to_string(),
+        role: "local".to_string(),
     }];
     let task_id = cl
         .run_task(

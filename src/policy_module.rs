@@ -122,7 +122,7 @@ impl PolicyModule {
                             return false;
                         }
                     };
-                    if !regex.is_match(&p.ptype) {
+                    if !regex.is_match(&p.role) {
                         return false;
                     }
                     break;
