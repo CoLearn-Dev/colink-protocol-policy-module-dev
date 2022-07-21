@@ -11,7 +11,7 @@ impl ProtocolEntry for UserStart {
         cl: CoLink,
         _param: Vec<u8>,
         _participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),
@@ -41,7 +41,7 @@ impl ProtocolEntry for UserStop {
         cl: CoLink,
         _param: Vec<u8>,
         _participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),
@@ -65,7 +65,7 @@ impl ProtocolEntry for UserAddProtocol {
         cl: CoLink,
         param: Vec<u8>,
         _participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),
@@ -101,7 +101,7 @@ impl ProtocolEntry for UserRemoveRule {
         cl: CoLink,
         param: Vec<u8>,
         _participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),
@@ -133,7 +133,7 @@ impl ProtocolEntry for UserReset {
         cl: CoLink,
         _param: Vec<u8>,
         _participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),

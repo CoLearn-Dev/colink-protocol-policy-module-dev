@@ -12,7 +12,9 @@ struct PolicyModule {
 }
 
 impl PolicyModule {
-    async fn _rule_monitor(&self) -> Result<(), Box<dyn std::error::Error>> {
+    async fn _rule_monitor(
+        &self,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let queue_name = self.cl.subscribe("_policy_module:settings", None).await?;
         let mut subscriber = self.cl.new_subscriber(&queue_name).await?;
         loop {
@@ -42,7 +44,10 @@ impl PolicyModule {
         }
     }
 
-    async fn _operator(&self, queue_name: &str) -> Result<(), Box<dyn std::error::Error>> {
+    async fn _operator(
+        &self,
+        queue_name: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let mut subscriber = self.cl.new_subscriber(queue_name).await?;
         loop {
             let data = subscriber.get_next().await?;
@@ -159,7 +164,7 @@ impl ProtocolEntry for PolicyModuleLauncher {
         cl: CoLink,
         _param: Vec<u8>,
         _participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let pm = Arc::new(PolicyModule {
             cl: cl.clone(),
             rules: Mutex::new(Vec::new()),
