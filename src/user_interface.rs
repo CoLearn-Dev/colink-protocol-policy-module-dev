@@ -12,6 +12,7 @@ impl ProtocolEntry for UserStart {
         _param: Vec<u8>,
         _participants: Vec<Participant>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+        let lock = cl.lock("_policy_module:settings").await?;
         let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),
@@ -23,6 +24,7 @@ impl ProtocolEntry for UserStart {
         let mut payload = vec![];
         settings.encode(&mut payload).unwrap();
         cl.update_entry("_policy_module:settings", &payload).await?;
+        cl.unlock(lock).await?;
         let participants = vec![Participant {
             user_id: cl.get_user_id()?,
             role: "local".to_string(),
@@ -42,6 +44,7 @@ impl ProtocolEntry for UserStop {
         _param: Vec<u8>,
         _participants: Vec<Participant>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+        let lock = cl.lock("_policy_module:settings").await?;
         let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),
@@ -53,6 +56,7 @@ impl ProtocolEntry for UserStop {
         let mut payload = vec![];
         settings.encode(&mut payload).unwrap();
         cl.update_entry("_policy_module:settings", &payload).await?;
+        cl.unlock(lock).await?;
         Ok(())
     }
 }
@@ -66,6 +70,7 @@ impl ProtocolEntry for UserAddProtocol {
         param: Vec<u8>,
         _participants: Vec<Participant>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+        let lock = cl.lock("_policy_module:settings").await?;
         let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),
@@ -84,6 +89,7 @@ impl ProtocolEntry for UserAddProtocol {
         let mut payload = vec![];
         settings.encode(&mut payload).unwrap();
         cl.update_entry("_policy_module:settings", &payload).await?;
+        cl.unlock(lock).await?;
         cl.create_entry(
             &format!("tasks:{}:output", cl.get_task_id()?),
             rule_id.as_bytes(),
@@ -102,6 +108,7 @@ impl ProtocolEntry for UserRemoveRule {
         param: Vec<u8>,
         _participants: Vec<Participant>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+        let lock = cl.lock("_policy_module:settings").await?;
         let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),
@@ -118,7 +125,9 @@ impl ProtocolEntry for UserRemoveRule {
             let mut payload = vec![];
             settings.encode(&mut payload).unwrap();
             cl.update_entry("_policy_module:settings", &payload).await?;
+            cl.unlock(lock).await?;
         } else {
+            cl.unlock(lock).await?;
             error!("Rule not found.");
         }
         Ok(())
@@ -134,6 +143,7 @@ impl ProtocolEntry for UserReset {
         _param: Vec<u8>,
         _participants: Vec<Participant>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+        let lock = cl.lock("_policy_module:settings").await?;
         let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
             Ok(res) => prost::Message::decode(&*res)?,
             Err(_) => Default::default(),
@@ -142,6 +152,7 @@ impl ProtocolEntry for UserReset {
         let mut payload = vec![];
         settings.encode(&mut payload).unwrap();
         cl.update_entry("_policy_module:settings", &payload).await?;
+        cl.unlock(lock).await?;
         Ok(())
     }
 }

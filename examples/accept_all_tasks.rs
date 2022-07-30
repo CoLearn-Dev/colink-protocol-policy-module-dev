@@ -10,6 +10,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let jwt = &args[1];
 
     let cl = CoLink::new(addr, jwt);
+    let lock = cl.lock("_policy_module:settings").await?;
     let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
         Ok(res) => prost::Message::decode(&*res)?,
         Err(_) => Default::default(),
@@ -25,6 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let mut payload = vec![];
     settings.encode(&mut payload).unwrap();
     cl.update_entry("_policy_module:settings", &payload).await?;
+    cl.unlock(lock).await?;
 
     Ok(())
 }
