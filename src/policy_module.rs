@@ -16,6 +16,12 @@ impl PolicyModule {
         &self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let queue_name = self.cl.subscribe("_policy_module:settings", None).await?;
+        let res = self.cl.read_entry("_policy_module:settings").await?;
+        let mut settings: Settings = prost::Message::decode(&*res)?;
+        let mut rules = self.rules.lock().await;
+        rules.clear();
+        rules.append(&mut settings.rules);
+        drop(rules);
         let mut subscriber = self.cl.new_subscriber(&queue_name).await?;
         loop {
             let data = subscriber.get_next().await?;
