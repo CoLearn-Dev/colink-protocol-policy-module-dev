@@ -125,11 +125,10 @@ impl ProtocolEntry for UserRemoveRule {
             let mut payload = vec![];
             settings.encode(&mut payload).unwrap();
             cl.update_entry("_policy_module:settings", &payload).await?;
-            cl.unlock(lock).await?;
         } else {
-            cl.unlock(lock).await?;
             error!("Rule not found.");
         }
+        cl.unlock(lock).await?;
         Ok(())
     }
 }
