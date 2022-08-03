@@ -1,6 +1,5 @@
 use crate::colink_policy_module_proto::*;
-use colink_sdk_a::*;
-use colink_sdk_p::ProtocolEntry;
+use colink_sdk::*;
 use regex::Regex;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -163,7 +162,7 @@ impl PolicyModule {
 }
 
 pub struct PolicyModuleLauncher;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for PolicyModuleLauncher {
     async fn start(
         &self,

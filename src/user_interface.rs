@@ -1,10 +1,9 @@
 use crate::colink_policy_module_proto::*;
-use colink_sdk_a::*;
-use colink_sdk_p::ProtocolEntry;
+use colink_sdk::*;
 use prost::Message;
 use tracing::error;
 pub struct UserStart;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for UserStart {
     async fn start(
         &self,
@@ -36,7 +35,7 @@ impl ProtocolEntry for UserStart {
 }
 
 pub struct UserStop;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for UserStop {
     async fn start(
         &self,
@@ -62,7 +61,7 @@ impl ProtocolEntry for UserStop {
 }
 
 pub struct UserAddProtocol;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for UserAddProtocol {
     async fn start(
         &self,
@@ -100,7 +99,7 @@ impl ProtocolEntry for UserAddProtocol {
 }
 
 pub struct UserRemoveRule;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for UserRemoveRule {
     async fn start(
         &self,
@@ -134,7 +133,7 @@ impl ProtocolEntry for UserRemoveRule {
 }
 
 pub struct UserReset;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for UserReset {
     async fn start(
         &self,

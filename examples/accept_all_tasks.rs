@@ -1,5 +1,5 @@
 use colink_policy_module::colink_policy_module_proto::*;
-use colink_sdk_a::CoLink;
+use colink_sdk::CoLink;
 use prost::Message;
 use std::env;
 
