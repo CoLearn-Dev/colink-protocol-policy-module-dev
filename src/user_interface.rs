@@ -17,7 +17,8 @@ impl ProtocolEntry for UserStart {
             Err(_) => Default::default(),
         };
         if settings.enable {
-            Err("The policy module has already been started.")?
+            cl.unlock(lock).await?;
+            return Err("The policy module has already been started.")?;
         }
         settings.enable = true;
         let mut payload = vec![];
@@ -49,7 +50,8 @@ impl ProtocolEntry for UserStop {
             Err(_) => Default::default(),
         };
         if !settings.enable {
-            Err("The policy module is not running.")?
+            cl.unlock(lock).await?;
+            return Err("The policy module is not running.")?;
         }
         settings.enable = false;
         let mut payload = vec![];
