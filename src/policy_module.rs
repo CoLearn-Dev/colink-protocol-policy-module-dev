@@ -15,17 +15,29 @@ impl PolicyModule {
         &self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let queue_name = self.cl.subscribe("_policy_module:settings", None).await?;
-        let res = self.cl.read_entry("_policy_module:settings").await?;
-        let mut settings: Settings = prost::Message::decode(&*res)?;
+        let storage_entry = StorageEntry {
+            key_name: "_policy_module:settings".to_string(),
+            ..Default::default()
+        };
+        let res = self.cl.read_entries(&[storage_entry]).await?;
+        let rule_timestamp = get_timestamp(&res[0].key_path);
+        let mut settings: Settings = prost::Message::decode(&*res[0].payload)?;
         let mut rules = self.rules.lock().await;
         rules.clear();
         rules.append(&mut settings.rules);
         drop(rules);
+        self.cl
+            .update_entry(
+                "_policy_module:applied_settings_timestamp",
+                &rule_timestamp.to_le_bytes(),
+            )
+            .await?;
         let mut subscriber = self.cl.new_subscriber(&queue_name).await?;
         loop {
             let data = subscriber.get_next().await?;
             debug!("Received [{}]", String::from_utf8_lossy(&data));
             let message: SubscriptionMessage = prost::Message::decode(&*data)?;
+            let rule_timestamp = get_timestamp(&message.key_path);
             if message.change_type != "delete" {
                 let mut settings: Settings = prost::Message::decode(&*message.payload)?;
                 if settings.enable {
@@ -34,8 +46,20 @@ impl PolicyModule {
                     rules.clear();
                     rules.append(&mut settings.rules);
                     drop(rules);
+                    self.cl
+                        .update_entry(
+                            "_policy_module:applied_settings_timestamp",
+                            &rule_timestamp.to_le_bytes(),
+                        )
+                        .await?;
                 } else {
                     self.cl.unsubscribe(&queue_name).await?;
+                    self.cl
+                        .update_entry(
+                            "_policy_module:applied_settings_timestamp",
+                            &rule_timestamp.to_le_bytes(),
+                        )
+                        .await?;
                     return Ok(());
                 }
             }
@@ -178,8 +202,13 @@ impl ProtocolEntry for PolicyModuleLauncher {
             cl: cl.clone(),
             rules: Mutex::new(Vec::new()),
         });
-        let res = cl.read_entry("_policy_module:settings").await?;
-        let mut settings: Settings = prost::Message::decode(&*res)?;
+        let storage_entry = StorageEntry {
+            key_name: "_policy_module:settings".to_string(),
+            ..Default::default()
+        };
+        let res = cl.read_entries(&[storage_entry]).await?;
+        let rule_timestamp = get_timestamp(&res[0].key_path);
+        let mut settings: Settings = prost::Message::decode(&*res[0].payload)?;
         if settings.enable {
             let mut rules = pm.rules.lock().await;
             rules.append(&mut settings.rules);
@@ -191,6 +220,11 @@ impl ProtocolEntry for PolicyModuleLauncher {
             let task_queue_name = cl
                 .subscribe("_internal:tasks:status:waiting:latest", None)
                 .await?;
+            cl.update_entry(
+                "_policy_module:applied_settings_timestamp",
+                &rule_timestamp.to_le_bytes(),
+            )
+            .await?;
             let operator = {
                 let queue_name = task_queue_name.clone();
                 let pm = pm.clone();
@@ -202,4 +236,9 @@ impl ProtocolEntry for PolicyModuleLauncher {
         }
         Ok(())
     }
+}
+
+fn get_timestamp(key_path: &str) -> i64 {
+    let pos = key_path.rfind('@').unwrap();
+    key_path[pos + 1..].parse().unwrap()
 }
