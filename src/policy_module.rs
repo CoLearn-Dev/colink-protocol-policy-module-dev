@@ -112,19 +112,17 @@ impl PolicyModule {
                     if matched_priority == -1 {
                         warn!("rules conflict when matching task {}", task.task_id);
                     } else if matched_priority != i64::MAX {
-                        let _ = async {
+                        let cl = self.cl.clone();
+                        tokio::spawn(async move {
                             if matched_action == "approve" {
-                                self.cl.confirm_task(&task.task_id, true, false, "").await?;
+                                cl.confirm_task(&task.task_id, true, false, "").await?;
                             } else if matched_action == "reject" {
-                                self.cl.confirm_task(&task.task_id, false, true, "").await?;
+                                cl.confirm_task(&task.task_id, false, true, "").await?;
                             } else if matched_action == "ignore" {
-                                self.cl
-                                    .confirm_task(&task.task_id, false, false, "")
-                                    .await?;
+                                cl.confirm_task(&task.task_id, false, false, "").await?;
                             }
                             Ok::<(), Box<dyn std::error::Error + Send + Sync + 'static>>(())
-                        }
-                        .await;
+                        });
                     }
                 }
             }
