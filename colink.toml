@@ -1,0 +1,9 @@
+[package]
+name = "policy_module"
+keywords = ["policy module"]
+colink-version = "rust-0.1.14"
+description = "policy module"
+
+[policy_module]
+name = "policy_module"
+description = "policy module"
