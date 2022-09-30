@@ -215,9 +215,9 @@ impl ProtocolEntry for PolicyModuleLauncher {
                 let pm = pm.clone();
                 tokio::spawn(async move { pm.rule_monitor().await })
             };
-            let task_queue_name = cl
-                .subscribe("_internal:tasks:status:waiting:latest", None)
-                .await?;
+            let task_queue_name =
+                String::from_utf8_lossy(&cl.read_or_wait("_policy_module:task_queue_name").await?)
+                    .to_string();
             cl.update_entry(
                 "_policy_module:applied_settings_timestamp",
                 &rule_timestamp.to_le_bytes(),
