@@ -16,7 +16,8 @@ impl ProtocolEntry for Init {
             ..Default::default()
         };
         if let Ok(accept_all_tasks) = cl.read_entry("_policy_module:init:accept_all_tasks").await {
-            if accept_all_tasks[0] == 1 {
+            let accept_all_tasks = String::from_utf8_lossy(&accept_all_tasks);
+            if accept_all_tasks == "true" {
                 let rule_id = uuid::Uuid::new_v4().to_string();
                 let rule = Rule {
                     rule_id,
