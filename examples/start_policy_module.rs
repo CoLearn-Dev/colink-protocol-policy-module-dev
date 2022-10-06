@@ -1,5 +1,5 @@
 use colink::{CoLink, Participant};
-use colink_policy_module::colink_policy_module_proto::*;
+use colink_protocol_policy_module::colink_policy_module_proto::*;
 use prost::Message;
 use std::env;
 

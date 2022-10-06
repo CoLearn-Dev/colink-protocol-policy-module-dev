@@ -1,6 +1,6 @@
 [package]
-name = "colink-policy-module"
-version = "0.1.0"
+name = "colink-protocol-policy-module"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]

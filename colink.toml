@@ -1,5 +1,6 @@
 [package]
 name = "policy_module"
+version = "0.1.1"
 keywords = ["policy module"]
 description = "policy module"
 entrypoint = "cargo run"

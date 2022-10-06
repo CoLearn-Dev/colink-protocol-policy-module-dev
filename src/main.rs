@@ -1,6 +1,6 @@
-use colink_policy_module::init::Init;
-use colink_policy_module::policy_module::PolicyModuleLauncher;
-use colink_policy_module::user_interface::*;
+use colink_protocol_policy_module::init::Init;
+use colink_protocol_policy_module::policy_module::PolicyModuleLauncher;
+use colink_protocol_policy_module::user_interface::*;
 
 colink::protocol_start!(
     ("policy_module:@init", Init),
