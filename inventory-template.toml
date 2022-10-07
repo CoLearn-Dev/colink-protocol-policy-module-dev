@@ -1,8 +1,3 @@
-[package]
-name = "policy_module"
-keywords = ["policy module"]
-description = "policy module"
-
 [source]
     [source.git]
     url = "{{source.git.url}}"
