@@ -3,4 +3,3 @@ pub mod colink_policy_module_proto {
 }
 pub mod init;
 pub mod policy_module;
-pub mod user_interface;
