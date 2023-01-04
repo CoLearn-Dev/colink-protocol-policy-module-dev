@@ -120,6 +120,11 @@ impl PolicyModule {
                                 cl.confirm_task(&task.task_id, false, true, "").await?;
                             } else if matched_action == "ignore" {
                                 cl.confirm_task(&task.task_id, false, false, "").await?;
+                            } else if let Some(forward_target_keyname) =
+                                matched_action.strip_prefix("forward:")
+                            {
+                                cl.update_entry(forward_target_keyname, &message.payload)
+                                    .await?;
                             }
                             Ok::<(), Box<dyn std::error::Error + Send + Sync + 'static>>(())
                         });
