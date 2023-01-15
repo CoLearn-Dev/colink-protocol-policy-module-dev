@@ -7,7 +7,7 @@ edition = "2021"
 colink = "0.2.8"
 prost = "0.10"
 regex = "1.5"
-tokio = "1.18"
+tokio = "1.24"
 tracing = "0.1"
 uuid = { version = "0.8", features = ["v4"] }
 
