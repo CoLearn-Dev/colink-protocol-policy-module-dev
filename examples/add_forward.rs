@@ -22,7 +22,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
             protocol_name: "greetings".to_string(),
             ..Default::default()
         }),
-        action: "forward:_policy_module:sub:greetings".to_string(),
+        action: Some(Action {
+            r#type: "forward".to_string(),
+            forward_target_keyname: "_policy_module:sub:greetings".to_string(),
+            ..Default::default()
+        }),
         priority: 1,
     };
     settings.rules.push(rule);

@@ -19,7 +19,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let rule = Rule {
         rule_id: rule_id.clone(),
         task_filter: Some(TaskFilter::default()),
-        action: "approve".to_string(),
+        action: Some(Action {
+            r#type: "approve".to_string(),
+            ..Default::default()
+        }),
         priority: 1,
     };
     settings.rules.push(rule);
