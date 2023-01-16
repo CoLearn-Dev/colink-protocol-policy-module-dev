@@ -1,6 +1,6 @@
 [package]
 name = "policy_module"
-version = "0.1.2"
+version = "0.1.3"
 keywords = ["policy module", "colink internal"]
 description = "The internal CoLink module for customizable policy checking of protocol execution"
 entrypoint = "cargo run"
