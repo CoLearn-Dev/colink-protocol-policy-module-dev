@@ -92,7 +92,7 @@ impl PolicyModule {
                 if task.status == "waiting" {
                     let rules = self.rules.lock().await.clone();
                     let mut matched_priority = i64::MAX;
-                    let mut matched_action = "".to_string();
+                    let mut matched_action = Action::default();
                     for rule in rules {
                         if rule.priority as i64 > matched_priority {
                             break;
@@ -102,8 +102,8 @@ impl PolicyModule {
                         {
                             if matched_priority == i64::MAX {
                                 matched_priority = rule.priority as i64;
-                                matched_action = rule.action;
-                            } else if matched_action != rule.action {
+                                matched_action = rule.action.unwrap();
+                            } else if matched_action != rule.action.unwrap() {
                                 matched_priority = -1;
                                 break;
                             }
@@ -114,17 +114,18 @@ impl PolicyModule {
                     } else if matched_priority != i64::MAX {
                         let cl = self.cl.clone();
                         tokio::spawn(async move {
-                            if matched_action == "approve" {
+                            if matched_action.r#type == "approve" {
                                 cl.confirm_task(&task.task_id, true, false, "").await?;
-                            } else if matched_action == "reject" {
+                            } else if matched_action.r#type == "reject" {
                                 cl.confirm_task(&task.task_id, false, true, "").await?;
-                            } else if matched_action == "ignore" {
+                            } else if matched_action.r#type == "ignore" {
                                 cl.confirm_task(&task.task_id, false, false, "").await?;
-                            } else if let Some(forward_target_keyname) =
-                                matched_action.strip_prefix("forward:")
-                            {
-                                cl.update_entry(forward_target_keyname, &message.payload)
-                                    .await?;
+                            } else if matched_action.r#type == "forward" {
+                                cl.update_entry(
+                                    &matched_action.forward_target_keyname,
+                                    &message.payload,
+                                )
+                                .await?;
                             }
                             Ok::<(), Box<dyn std::error::Error + Send + Sync + 'static>>(())
                         });

@@ -22,7 +22,10 @@ impl ProtocolEntry for Init {
                 let rule = Rule {
                     rule_id,
                     task_filter: Some(TaskFilter::default()),
-                    action: "approve".to_string(),
+                    action: Some(Action {
+                        r#type: "approve".to_string(),
+                        ..Default::default()
+                    }),
                     priority: 1,
                 };
                 settings.rules.push(rule);
