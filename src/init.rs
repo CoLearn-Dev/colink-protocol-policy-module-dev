@@ -11,10 +11,12 @@ impl ProtocolEntry for Init {
         _param: Vec<u8>,
         _participants: Vec<Participant>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
-        let mut settings = Settings {
-            enable: true,
-            ..Default::default()
+        let lock = cl.lock("_policy_module:settings").await?;
+        let mut settings: Settings = match cl.read_entry("_policy_module:settings").await {
+            Ok(res) => prost::Message::decode(&*res)?,
+            Err(_) => Default::default(),
         };
+        settings.enable = true;
         if let Ok(accept_all_tasks) = cl.read_entry("_policy_module:init:accept_all_tasks").await {
             let accept_all_tasks = String::from_utf8_lossy(&accept_all_tasks);
             if accept_all_tasks == "true" {
@@ -34,6 +36,7 @@ impl ProtocolEntry for Init {
         let mut payload = vec![];
         settings.encode(&mut payload).unwrap();
         cl.update_entry("_policy_module:settings", &payload).await?;
+        cl.unlock(lock).await?;
         let task_queue_name = cl
             .subscribe("_internal:tasks:status:waiting:latest", None)
             .await?;

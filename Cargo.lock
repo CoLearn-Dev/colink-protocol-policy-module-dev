@@ -454,9 +454,9 @@ dependencies = [
 
 [[package]]
 name = "colink"
-version = "0.3.0"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60a15b3a6c5c9cac9f28e88df8b3a6cd4549c7498e72e410e49b9939419b0da8"
+checksum = "bf9a4c8c6720af7ec76ecf8429dea0e66aa19fe6722574ff8f5471e4415e10ef"
 dependencies = [
  "async-recursion",
  "async-trait",
@@ -490,7 +490,7 @@ dependencies = [
 
 [[package]]
 name = "colink-protocol-policy-module"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "colink",
  "prost",
